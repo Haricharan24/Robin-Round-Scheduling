@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MAX_PROCESSES 50
-#define TIME_QUANTUM 10
+#define MAX_PROCESSES 100
+#define TIME_QUANTUM 100
 
 typedef struct {
     int pid;        // process ID

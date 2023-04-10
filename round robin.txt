@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_PROCESSES 50
+#define TIME_QUANTUM 10
+
+typedef struct {
+    int pid;        // process ID
+    int arrival;    // arrival time
+    int burst;      // CPU burst time
+    int waiting;    // waiting time
+    int turnaround; // turnaround time
+    int remaining;  // remaining burst time
+} Process;
+
+void generate_processes(Process processes[], int n);
+void round_robin(Process processes[], int n);
+void print_results(Process processes[], int n, int total_waiting_time, int total_turnaround_time);
+
+int main() {
+    srand(time(NULL)); // seed random number generator
+
+    int n;
+    printf("Enter number of processes (maximum %d): ", MAX_PROCESSES);
+    scanf("%d", &n);
+
+    Process processes[MAX_PROCESSES];
+    generate_processes(processes, n);
+
+    round_robin(processes, n);
+
+    int total_waiting_time = 0, total_turnaround_time = 0;
+    for (int i = 0; i < n; i++) {
+        total_waiting_time += processes[i].waiting;
+        total_turnaround_time += processes[i].turnaround;
+    }
+
+    print_results(processes, n, total_waiting_time, total_turnaround_time);
+
+    return 0;
+}
+
+void generate_processes(Process processes[], int n) {
+    printf("Generating %d processes with random arrival and burst times...\n", n);
+
+    for (int i = 0; i < n; i++) {
+        processes[i].pid = i + 1;
+        processes[i].arrival = rand() % 50; // random arrival time between 0 and 49
+        processes[i].burst = rand() % 20 + 1; // random burst time between 1 and 20
+        processes[i].waiting = 0;
+        processes[i].turnaround = 0;
+        processes[i].remaining = processes[i].burst;
+    }
+}
+
+void round_robin(Process processes[], int n) {
+    printf("Running Round Robin scheduling algorithm for %d time units...\n", TIME_QUANTUM);
+
+    int time = 0, completed = 0;
+    while (completed < n) {
+        for (int i = 0; i < n; i++) {
+            if (processes[i].remaining > 0) {
+                if (processes[i].remaining <= TIME_QUANTUM) {
+                    time += processes[i].remaining;
+                    processes[i].remaining = 0;
+                    processes[i].waiting = time - processes[i].arrival - processes[i].burst;
+                    processes[i].turnaround = time - processes[i].arrival;
+                    completed++;
+                } else {
+                    time += TIME_QUANTUM;
+                    processes[i].remaining -= TIME_QUANTUM;
+                }
+            }
+        }
+    }
+}
+
+void print_results(Process processes[], int n, int total_waiting_time, int total_turnaround_time) {
+    printf("\nProcess ID\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\n", processes[i].pid, processes[i].arrival, 
+                processes[i].burst, processes[i].waiting, processes[i].turnaround);
+    }
+
+    printf("Average waiting time: %.2f\n", (float)total_waiting_time / n);
+    printf("Average turnaround time: %.2f\n", (float)total_turnaround_time / n);
+return 0;
+}
